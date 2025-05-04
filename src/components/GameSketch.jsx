@@ -16,6 +16,7 @@ const GameSketch = () => {
       let gameOver = false;
       let tempoInicial = 0;
       let tempoFinal = 0;
+      let audioDestravado = false;
 
       // variáveis de imagem e som
       let peterImg, peterNormalImg, peterDorImg, bgImg, tvImg, imgComida, imgFitness, gameOverImg;
@@ -77,7 +78,7 @@ const GameSketch = () => {
           gameOverImg    = await p.loadImage('/game_over.png');
 
           crySound       = await p.loadSound('/peter-dor_song.mp3');
-          gameOverSound = await p.loadSound('/birdSong.mp3');
+          gameOverSound  = await p.loadSound('/birdSong.mp3');
         } catch (error) {
           console.error('Erro ao carregar recursos:', error);
         }
@@ -187,6 +188,14 @@ const GameSketch = () => {
       };
 
       p.mousePressed = () => {
+        if (!audioDestravado) {
+          if (crySound && !crySound.isPlaying()) {
+            crySound.play();
+            crySound.stop();
+          }
+          audioDestravado = true;
+        }
+
         if (gameOver) {
           massaPeter   = 100;
           objetos      = [];
