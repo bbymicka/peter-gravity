@@ -1,6 +1,7 @@
-// src/components/GameSketch.jsx
 import React, { useRef, useEffect } from 'react';
 import p5 from 'p5';
+import 'p5.sound';
+
 
 const GameSketch = () => {
   const sketchRef = useRef();
