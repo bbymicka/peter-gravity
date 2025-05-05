@@ -189,6 +189,12 @@ const GameSketch = () => {
             return;
           }
 
+          if(gameOver){
+            if(gameOverSound && gameOverSound.isPlaying()){
+              gameOverSound.stop();
+            }
+          }
+
           if (gameOver) {
             massaPeter   = 100;
             objetos      = [];
