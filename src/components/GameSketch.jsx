@@ -6,6 +6,7 @@ const GameSketch = () => {
   useEffect(() => {
     const initSketch = async () => {
       const sketch = (p) => {
+        /* ---------- VARIÁVEIS DO JOGO ---------- */
         let centerX, centerY;
         let angle = 0;
         const orbitRadius = 220;
@@ -18,24 +19,25 @@ const GameSketch = () => {
         let dificuldade = 0.01;
         let tempoUltimaAjuste = 0;
 
-        let peterImg, peterNormalImg, peterDorImg, bgImg, tvImg, imgComida, imgFitness, gameOverImg;
-        let crySound, gameOverSound;
+        /* ---------- VARIÁVEIS DA TELA START ---------- */
         let started = false;
         let soundsLoaded = false;
+        let bgStartImg, logoImg, playBtnImg;
+        let playBtnW = 0, playBtnH = 0;
 
-        const mostrarPeterComDor = () => {
-          peterImg = peterDorImg;
-          if (crySound && crySound.isLoaded() && !crySound.isPlaying()) crySound.play();
-          setTimeout(() => { peterImg = peterNormalImg; }, 500);
-        };
+        /* ---------- IMAGENS / SONS ---------- */
+        let peterImg, peterNormalImg, peterDorImg, bgImg, tvImg,
+            imgComida, imgFitness, gameOverImg;
+        let crySound, gameOverSound;
 
+        /* ---------- CLASSE OBJETO (restaurada) ---------- */
         class Objeto {
           constructor(x, y, tipo) {
             this.x = x;
             this.y = y;
             this.tipo = tipo;
             this.raio = 20;
-            this.velocidade = tipo === 'fitness'? p.random(2, 4.5) : 2;
+            this.velocidade = tipo === 'fitness' ? p.random(2, 4.5) : 2;
           }
           update() {
             const dx = centerX - this.x;
@@ -58,13 +60,24 @@ const GameSketch = () => {
           }
         }
 
+        /* ---------- FUNÇÕES AUXILIARES ---------- */
+        const mostrarPeterComDor = () => {
+          peterImg = peterDorImg;
+          if (crySound && crySound.isLoaded() && !crySound.isPlaying()) {
+            crySound.play();
+          }
+          setTimeout(() => { peterImg = peterNormalImg; }, 500);
+        };
+
+        /* ---------- SETUP ---------- */
         p.setup = async () => {
           p.createCanvas(p.windowWidth, p.windowHeight - 1);
-          centerX      = p.width / 2;
-          centerY      = p.height / 2;
+          centerX = p.width / 2;
+          centerY = p.height / 2;
           tempoInicial = p.millis();
 
           try {
+            // imagens gameplay
             peterNormalImg = await p.loadImage('/peter_normal.png');
             peterDorImg    = await p.loadImage('/peter_dor.png');
             peterImg       = peterNormalImg;
@@ -73,21 +86,58 @@ const GameSketch = () => {
             imgComida      = await p.loadImage('/food.png');
             imgFitness     = await p.loadImage('/dumbbell.png');
             gameOverImg    = await p.loadImage('/game_over.png');
-          } catch (error) {
-            console.error('Erro ao carregar imagens:', error);
+
+            // imagens tela start
+            bgStartImg = await p.loadImage('/background-start.png');
+            logoImg    = await p.loadImage('/pg-logo.png');
+            playBtnImg = await p.loadImage('/button-play.png');
+          } catch (err) {
+            console.error('Erro ao carregar imagens:', err);
           }
         };
 
+        /* ---------- DRAW ---------- */
         p.draw = () => {
+          /* --- TELA START --- */
           if (!started) {
-            p.background(30);
-            p.fill(255);
-            p.textAlign(p.CENTER, p.CENTER);
-            p.textSize(32);
-            p.text('CLIQUE PARA INICIAR', p.width / 2, p.height / 2);
+            if (bgStartImg) {
+              p.imageMode(p.CORNER);
+              p.image(bgStartImg, 0, 0, p.width, p.height);
+            } else {
+              p.background(30);
+            }
+
+            if (logoImg) {
+              const maxW = p.width * 0.25;
+              const s    = maxW / logoImg.width;
+              const w    = logoImg.width  * s;
+              const h    = logoImg.height * s;
+              const yBounce = Math.sin(p.millis() * 0.004) * 10;
+              p.image(
+                logoImg,
+                20,
+                p.height - h - 20 + yBounce,
+                w, h
+              );
+            }
+
+            if (playBtnImg) {
+              const maxW = p.width * 0.135;
+              const s    = maxW / playBtnImg.width;
+              playBtnW   = playBtnImg.width  * s;
+              playBtnH   = playBtnImg.height * s;
+              p.image(
+                playBtnImg,
+                p.width - playBtnW - 80,
+                p.height - playBtnH - 120,
+                playBtnW,
+                playBtnH
+              );
+            }
             return;
           }
 
+          /* --- GAME OVER --- */
           if (gameOver) {
             p.background(0, 150);
             p.imageMode(p.CENTER);
@@ -95,11 +145,13 @@ const GameSketch = () => {
             p.fill(255);
             p.textSize(32);
             p.textAlign(p.CENTER, p.TOP);
-            p.text(`Tempo de jogo: ${(tempoFinal / 1000).toFixed(1)}s`, p.width / 2, p.height / 2 + 180);
+            p.text(`Tempo de jogo: ${(tempoFinal / 1000).toFixed(1)}s`,
+                   p.width / 2, p.height / 2 + 180);
             p.noLoop();
             return;
           }
 
+          /* --- GAMEPLAY (resto inalterado) --- */
           if (bgImg) {
             p.imageMode(p.CORNER);
             p.image(bgImg, 0, 0, p.width, p.height);
@@ -122,27 +174,27 @@ const GameSketch = () => {
             p.image(tvImg, tvX, tvY, 190, 125);
           }
 
-          if (p.millis() - tempoUltimaAjuste > 10000) { // a cada 10s
-            dificuldade += 0.002; // aumenta a chance de spawn
+          if (p.millis() - tempoUltimaAjuste > 10000) {
+            dificuldade += 0.002;
             tempoUltimaAjuste = p.millis();
-          }          
+          }
 
           if (p.random(1) < dificuldade) {
             const side = p.floor(p.random(4));
-            let x, y;
-            if (side === 0)      { x = p.random(p.width); y = 0; }
-            else if (side === 1) { x = p.width; y = p.random(p.height); }
-            else if (side === 2) { x = p.random(p.width); y = p.height; }
-            else                 { x = 0; y = p.random(p.height); }
+            const pos  = [
+              [p.random(p.width), 0],
+              [p.width, p.random(p.height)],
+              [p.random(p.width), p.height],
+              [0, p.random(p.height)]
+            ][side];
             const tipo = p.random() < 0.5 ? 'comida' : 'fitness';
-            objetos.push(new Objeto(x, y, tipo));
+            objetos.push(new Objeto(pos[0], pos[1], tipo));
           }
 
           for (let i = objetos.length - 1; i >= 0; i--) {
             objetos[i].update();
             objetos[i].display();
-            const d = p.dist(objetos[i].x, objetos[i].y, centerX, centerY);
-            if (d < 160) {
+            if (p.dist(objetos[i].x, objetos[i].y, centerX, centerY) < 160) {
               if (objetos[i].tipo === 'comida') {
                 massaPeter += 2;
               } else {
@@ -160,21 +212,30 @@ const GameSketch = () => {
           p.fill(100);
           p.rect(barraX, barraY, barraW, barraH);
           p.fill(massaPeter > 30 ? 'green' : 'red');
-          p.rect(barraX, barraY, p.map(massaPeter, 0, massaMaxima, 0, barraW), barraH);
+          p.rect(barraX, barraY,
+                 p.map(massaPeter, 0, massaMaxima, 0, barraW), barraH);
           p.fill(255);
           p.textSize(14);
           p.textAlign(p.LEFT, p.CENTER);
           p.text(`Massa: ${massaPeter}`, barraX + 5, barraY + barraH / 2);
 
           if (massaPeter <= 0 && !gameOver) {
-            gameOver   = true;
+            gameOver = true;
             tempoFinal = p.millis() - tempoInicial;
             if (gameOverSound && gameOverSound.isLoaded()) gameOverSound.play();
           }
         };
 
+        /* ---------- MOUSE ---------- */
         p.mousePressed = () => {
           if (!started) {
+            const mx = p.mouseX, my = p.mouseY;
+            const btnX = p.width - playBtnW - 20;
+            const btnY = p.height - playBtnH - 20;
+            const dentro = mx >= btnX && mx <= btnX + playBtnW &&
+                           my >= btnY && my <= btnY + playBtnH;
+            if (!dentro) return;
+
             const ctx = p.getAudioContext();
             if (ctx.state !== 'running') ctx.resume();
 
@@ -196,10 +257,8 @@ const GameSketch = () => {
             return;
           }
 
-          if(gameOver){
-            if(gameOverSound && gameOverSound.isPlaying()){
-              gameOverSound.stop();
-            }
+          if (gameOver && gameOverSound && gameOverSound.isPlaying()) {
+            gameOverSound.stop();
           }
 
           if (gameOver) {
@@ -211,17 +270,16 @@ const GameSketch = () => {
             tempoFinal   = 0;
             peterImg     = peterNormalImg;
             p.loop();
+            return;
           }
 
-          // Verifica se clicou em algum haltere
+          // destruir halteres
           for (let i = objetos.length - 1; i >= 0; i--) {
             const obj = objetos[i];
-            if (obj.tipo === 'fitness') {
-              const d = p.dist(p.mouseX, p.mouseY, obj.x, obj.y);
-              if (d < 40) {
-                objetos.splice(i, 1); // remove da lista
-                break; // remove só um por clique
-              }
+            if (obj.tipo === 'fitness' &&
+                p.dist(p.mouseX, p.mouseY, obj.x, obj.y) < 40) {
+              objetos.splice(i, 1);
+              break;
             }
           }
         };
