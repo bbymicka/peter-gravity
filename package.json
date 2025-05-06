@@ -8,6 +8,7 @@
     "@testing-library/react": "^16.3.0",
     "@testing-library/user-event": "^13.5.0",
     "p5": "^2.0.1",
+    "p5.sound": "^0.2.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "react-p5-wrapper": "^4.1.2",
