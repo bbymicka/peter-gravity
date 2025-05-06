@@ -15,6 +15,8 @@ const GameSketch = () => {
         let gameOver = false;
         let tempoInicial = 0;
         let tempoFinal = 0;
+        let dificuldade = 0.01;
+        let tempoUltimaAjuste = 0;
 
         let peterImg, peterNormalImg, peterDorImg, bgImg, tvImg, imgComida, imgFitness, gameOverImg;
         let crySound, gameOverSound;
@@ -33,14 +35,14 @@ const GameSketch = () => {
             this.y = y;
             this.tipo = tipo;
             this.raio = 20;
+            this.velocidade = tipo === 'fitness'? p.random(2, 4.5) : 2;
           }
           update() {
             const dx = centerX - this.x;
             const dy = centerY - this.y;
             const dist = Math.hypot(dx, dy);
-            const velocidade = 2;
-            this.x += (dx / dist) * velocidade;
-            this.y += (dy / dist) * velocidade;
+            this.x += (dx / dist) * this.velocidade;
+            this.y += (dy / dist) * this.velocidade;
           }
           display() {
             p.imageMode(p.CENTER);
@@ -120,7 +122,12 @@ const GameSketch = () => {
             p.image(tvImg, tvX, tvY, 190, 125);
           }
 
-          if (p.random(1) < 0.01) {
+          if (p.millis() - tempoUltimaAjuste > 10000) { // a cada 10s
+            dificuldade += 0.002; // aumenta a chance de spawn
+            tempoUltimaAjuste = p.millis();
+          }          
+
+          if (p.random(1) < dificuldade) {
             const side = p.floor(p.random(4));
             let x, y;
             if (side === 0)      { x = p.random(p.width); y = 0; }
@@ -137,9 +144,9 @@ const GameSketch = () => {
             const d = p.dist(objetos[i].x, objetos[i].y, centerX, centerY);
             if (d < 160) {
               if (objetos[i].tipo === 'comida') {
-                massaPeter += 5;
+                massaPeter += 2;
               } else {
-                massaPeter -= 25;
+                massaPeter -= 50;
                 mostrarPeterComDor();
               }
               objetos.splice(i, 1);
@@ -198,6 +205,18 @@ const GameSketch = () => {
             tempoFinal   = 0;
             peterImg     = peterNormalImg;
             p.loop();
+          }
+
+          // Verifica se clicou em algum haltere
+          for (let i = objetos.length - 1; i >= 0; i--) {
+            const obj = objetos[i];
+            if (obj.tipo === 'fitness') {
+              const d = p.dist(p.mouseX, p.mouseY, obj.x, obj.y);
+              if (d < 40) {
+                objetos.splice(i, 1); // remove da lista
+                break; // remove só um por clique
+              }
+            }
           }
         };
 
