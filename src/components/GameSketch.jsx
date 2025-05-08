@@ -230,8 +230,8 @@ const GameSketch = () => {
         p.mousePressed = () => {
           if (!started) {
             const mx = p.mouseX, my = p.mouseY;
-            const btnX = p.width - playBtnW - 20;
-            const btnY = p.height - playBtnH - 20;
+            const btnX = p.width - playBtnW - 80;
+            const btnY = p.height - playBtnH - 120;
             const dentro = mx >= btnX && mx <= btnX + playBtnW &&
                            my >= btnY && my <= btnY + playBtnH;
             if (!dentro) return;
